@@ -15,7 +15,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Initialize FastAPI app
-app = FastAPI(title="Cortex AI - Legal Assistant API", version="1.0.0")
+app = FastAPI(title="Corpus AI - Legal Assistant API", version="1.0.0")
 
 # Add CORS middleware
 app.add_middleware(
@@ -36,7 +36,7 @@ if not GEMINI_API_KEY or GEMINI_API_KEY == "YOUR_GEMINI_API_KEY_HERE":
 
 if GEMINI_API_KEY:
     genai.configure(api_key=GEMINI_API_KEY)
-    model = genai.GenerativeModel('gemini-1.5-flash')  # Updated model name
+    model = genai.GenerativeModel('gemini-2.5-flash')  # Updated model name
 else:
     model = None
 
@@ -166,7 +166,7 @@ Please provide a detailed, accurate answer based solely on the contract content 
 @app.get("/")
 async def health_check():
     """Health check endpoint"""
-    return {"status": "active", "service": "Cortex AI Legal Assistant API"}
+    return {"status": "active", "service": "Corpus AI Legal Assistant API"}
 
 @app.post("/api/upload", response_model=ContractResponse)
 async def upload_contract(file: UploadFile = File(...)):

@@ -7,7 +7,7 @@ import json
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
 
-class CortexAITester:
+class CorpusAITester:
     def __init__(self, base_url="http://localhost:8001"):
         self.base_url = base_url
         self.tests_run = 0
@@ -231,11 +231,11 @@ class CortexAITester:
         return success
 
 def main():
-    print("🚀 Starting Cortex AI Backend API Tests")
+    print("🚀 Starting Corpus AI Backend API Tests")
     print("=" * 50)
     
     # Initialize tester
-    tester = CortexAITester()
+    tester = CorpusAITester()
     
     # Run all tests
     test_results = []

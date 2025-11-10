@@ -1,8 +1,8 @@
-# Cortex AI - Legal AI Assistant 🏛️⚖️
+# Corpus AI - Legal AI Assistant 🏛️⚖️
 
 **A sophisticated legal AI assistant designed for Indian legal professionals. Upload PDF contracts and get intelligent, context-aware answers powered by Google Gemini AI.**
 
-![Cortex AI](https://img.shields.io/badge/Status-Production%20Ready-brightgreen)
+![Corpus AI](https://img.shields.io/badge/Status-Production%20Ready-brightgreen)
 ![Tech Stack](https://img.shields.io/badge/Tech-FastAPI%20%2B%20React%20%2B%20Gemini%20AI-blue)
 ![License](https://img.shields.io/badge/License-MIT-yellow)
 
@@ -22,7 +22,7 @@
 ## 🏗️ **Architecture**
 
 ```
-Cortex AI/
+Corpus AI/
 ├── backend/          # FastAPI backend server
 │   ├── server.py     # Main application
 │   ├── requirements.txt
@@ -43,11 +43,13 @@ Cortex AI/
 ## 🚀 **Quick Start Guide**
 
 ### **Prerequisites**
+
 - Python 3.11+ installed
 - Node.js 18+ and Yarn installed
 - Google Gemini API key ([Get one here](https://makersuite.google.com/app/apikey))
 
 ### **Step 1: Clone & Setup**
+
 ```bash
 # Navigate to the application directory
 cd /app
@@ -56,6 +58,7 @@ cd /app
 ```
 
 ### **Step 2: Configure API Key**
+
 ```bash
 # Open the backend .env file
 nano /app/backend/.env
@@ -67,6 +70,7 @@ GEMINI_API_KEY=your_actual_api_key_here
 ### **Step 3: Start the Application**
 
 #### **Option A: Using Supervisor (Recommended)**
+
 ```bash
 # Start all services
 sudo supervisord -c scripts/supervisord.conf
@@ -81,6 +85,7 @@ sudo supervisorctl status
 ```
 
 #### **Option B: Manual Start**
+
 ```bash
 # Terminal 1: Start Backend
 cd /app/backend
@@ -92,6 +97,7 @@ yarn start
 ```
 
 ### **Step 4: Access the Application**
+
 - **Frontend**: http://localhost:3000
 - **Backend API**: http://localhost:8001
 - **API Documentation**: http://localhost:8001/docs
@@ -101,6 +107,7 @@ yarn start
 ## 📱 **How to Use**
 
 ### **1. Upload a Legal Contract**
+
 1. Open http://localhost:3000 in your browser
 2. Click the "Choose PDF file" area
 3. Select a legal contract PDF (max 10MB)
@@ -108,16 +115,18 @@ yarn start
 5. Wait for the processing confirmation
 
 ### **2. Ask Legal Questions**
+
 1. Once your contract is processed, use the question interface
 2. Type questions like:
-   - *"What are the termination clauses?"*
-   - *"Who is liable in case of breach?"*
-   - *"What are the payment terms?"*
-   - *"What is the governing law?"*
+   - _"What are the termination clauses?"_
+   - _"Who is liable in case of breach?"_
+   - _"What are the payment terms?"_
+   - _"What is the governing law?"_
 3. Click "Get Answer"
 4. Receive detailed AI-powered legal analysis
 
 ### **3. View Pricing**
+
 - Navigate to the "Pricing" page to see subscription tiers
 - Three options: Starter (₹999), Professional (₹2,999), Enterprise (Custom)
 
@@ -126,11 +135,13 @@ yarn start
 ## 🔧 **Service Management**
 
 ### **Check Service Status**
+
 ```bash
 sudo supervisorctl status
 ```
 
 ### **Restart Services**
+
 ```bash
 # Restart all services
 sudo supervisorctl restart all
@@ -141,6 +152,7 @@ sudo supervisorctl restart frontend
 ```
 
 ### **View Logs**
+
 ```bash
 # Backend logs
 tail -f /var/log/supervisor/backend.out.log
@@ -152,6 +164,7 @@ tail -f /var/log/supervisor/frontend.err.log
 ```
 
 ### **Stop Services**
+
 ```bash
 sudo supervisorctl stop all
 ```
@@ -161,6 +174,7 @@ sudo supervisorctl stop all
 ## 🛠️ **Troubleshooting**
 
 ### **Problem: Frontend not accessible**
+
 ```bash
 # Check if something is running on port 3000
 sudo lsof -i :3000
@@ -173,6 +187,7 @@ sudo supervisorctl restart frontend
 ```
 
 ### **Problem: Backend API errors**
+
 ```bash
 # Check backend logs
 tail -n 50 /var/log/supervisor/backend.err.log
@@ -185,11 +200,13 @@ curl http://localhost:8001/
 ```
 
 ### **Problem: "Gemini API key not configured"**
+
 1. Open `/app/backend/.env`
 2. Replace `YOUR_GEMINI_API_KEY_HERE` with your actual API key
 3. Restart backend: `sudo supervisorctl restart backend`
 
 ### **Problem: PDF upload fails**
+
 - Ensure file is a valid PDF
 - File size must be under 10MB
 - Check browser console for detailed errors
@@ -199,12 +216,14 @@ curl http://localhost:8001/
 ## 🔑 **Environment Variables**
 
 ### **Backend (.env)**
+
 ```bash
 GEMINI_API_KEY=your_gemini_api_key_here
-MONGO_URL=mongodb://localhost:27017/cortexai
+MONGO_URL=mongodb://localhost:27017/Corpusai
 ```
 
 ### **Frontend (.env)**
+
 ```bash
 REACT_APP_BACKEND_URL=http://localhost:8001
 ```
@@ -215,14 +234,15 @@ REACT_APP_BACKEND_URL=http://localhost:8001
 
 ### **Backend API (http://localhost:8001)**
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/` | Health check |
-| POST | `/api/upload` | Upload PDF contract |
-| POST | `/api/ask` | Ask question about contract |
-| GET | `/api/contracts/{id}` | Get contract information |
+| Method | Endpoint              | Description                 |
+| ------ | --------------------- | --------------------------- |
+| GET    | `/`                   | Health check                |
+| POST   | `/api/upload`         | Upload PDF contract         |
+| POST   | `/api/ask`            | Ask question about contract |
+| GET    | `/api/contracts/{id}` | Get contract information    |
 
 ### **Example API Usage**
+
 ```bash
 # Health check
 curl http://localhost:8001/
@@ -244,12 +264,14 @@ curl -X POST \
 ## 🧪 **Testing**
 
 ### **Run Backend Tests**
+
 ```bash
 cd /app
 python backend_test.py
 ```
 
 ### **Manual Testing Checklist**
+
 - [ ] Frontend loads at http://localhost:3000
 - [ ] Backend API responds at http://localhost:8001
 - [ ] PDF upload works with valid files
@@ -263,6 +285,7 @@ python backend_test.py
 ## 🔍 **Development**
 
 ### **Backend Development**
+
 ```bash
 cd /app/backend
 
@@ -274,6 +297,7 @@ uvicorn server:app --reload --host 0.0.0.0 --port 8001
 ```
 
 ### **Frontend Development**
+
 ```bash
 cd /app/frontend
 
@@ -289,12 +313,14 @@ yarn start
 ## 🎨 **UI Features**
 
 ### **Dark Theme Design**
+
 - Professional dark interface suitable for legal work
 - High contrast for excellent readability
 - Responsive design for all screen sizes
 - Smooth animations and transitions
 
 ### **User Experience**
+
 - Drag-and-drop file upload
 - Real-time loading states
 - Clear error messaging
@@ -344,6 +370,7 @@ If you encounter any issues:
 When everything is working correctly, you should see:
 
 ✅ **Services Status**
+
 ```bash
 $ sudo supervisorctl status
 backend    RUNNING   pid 12345, uptime 0:05:00
@@ -351,12 +378,12 @@ frontend   RUNNING   pid 12346, uptime 0:05:00
 mongodb    RUNNING   pid 12347, uptime 0:05:00
 ```
 
-✅ **Frontend Access**: http://localhost:3000 shows the dark Cortex AI interface
+✅ **Frontend Access**: http://localhost:3000 shows the dark Corpus AI interface
 
-✅ **Backend API**: http://localhost:8001 returns `{"status":"active","service":"Cortex AI Legal Assistant API"}`
+✅ **Backend API**: http://localhost:8001 returns `{"status":"active","service":"Corpus AI Legal Assistant API"}`
 
 ✅ **Full Workflow**: Upload PDF → Ask Question → Receive AI Answer
 
 ---
 
-**🚀 Your Cortex AI Legal Assistant is ready to revolutionize legal document analysis!**
+**🚀 Your Corpus AI Legal Assistant is ready to revolutionize legal document analysis!**
