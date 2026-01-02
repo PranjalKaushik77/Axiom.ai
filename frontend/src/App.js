@@ -94,13 +94,7 @@ function Navigation() {
               >
                 Negotiation Sandbox
               </Link>
-              <Link
-                to="/pricing"
-                className="block px-4 py-3 text-lg font-semibold text-gray-300 hover:text-white hover:bg-gray-800/30 rounded-xl transition-all duration-300"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Pricing
-              </Link>
+              
               <button className="w-full btn-primary mt-4 flex items-center justify-center space-x-2">
                 <Sparkles className="w-5 h-5" />
                 <span>Get Started</span>
