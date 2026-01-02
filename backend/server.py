@@ -2,7 +2,7 @@ import os
 import io
 import uuid
 from typing import Dict, List, Optional
-from fastapi import FastAPI, File, UploadFile, HTTPException, Form
+from fastapi import FastAPI, File, UploadFile, HTTPException, Form, Path
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import google.generativeai as genai
@@ -58,6 +58,22 @@ class AnswerResponse(BaseModel):
     answer: str
     contract_id: str
     question: str
+    timestamp: str
+
+
+class ClauseSuggestionRequest(BaseModel):
+    playbook: Optional[str] = None
+    negotiation_goal: Optional[str] = None
+    tone: Optional[str] = None
+    counterparty_position: Optional[str] = None
+
+
+class ClauseSuggestionResponse(BaseModel):
+    contract_id: str
+    clause_index: int
+    original_clause: str
+    ai_suggestion: str
+    guidance_summary: str
     timestamp: str
 
 def extract_text_from_pdf(file_content: bytes) -> tuple[str, int]:
@@ -161,6 +177,47 @@ CONTRACT SECTIONS:
 ANALYSIS:
 Please provide a detailed, accurate answer based solely on the contract content provided above. Include specific references to relevant clauses or sections where applicable."""
 
+    return prompt
+
+
+def generate_clause_suggestion_prompt(
+    clause_text: str,
+    playbook: Optional[str] = None,
+    negotiation_goal: Optional[str] = None,
+    tone: Optional[str] = None,
+    counterparty_position: Optional[str] = None,
+) -> str:
+    """Generate a prompt for clause redrafting aligned with user playbooks."""
+
+    playbook_section = f"\nPLAYBOOK GUIDANCE:\n{playbook}" if playbook else "\nPLAYBOOK GUIDANCE:\nNo explicit playbook provided. Apply best practices for commercial contracts in India."
+    goal_section = f"\nNEGOTIATION GOAL:\n{negotiation_goal}" if negotiation_goal else "\nNEGOTIATION GOAL:\nAchieve a balanced clause protecting our client's interests."
+    tone_section = f"\nPREFERRED TONE:\n{tone}" if tone else "\nPREFERRED TONE:\nProfessional and collaborative."
+    counterparty_section = f"\nCOUNTERPARTY POSITION:\n{counterparty_position}" if counterparty_position else "\nCOUNTERPARTY POSITION:\nNo specific inputs provided."
+
+    prompt = f"""You are an expert contract negotiator supporting an Indian legal team. Rewrite the clause provided below to align with the team's negotiation playbooks while keeping it enforceable.
+
+CURRENT CLAUSE:
+{clause_text}
+{playbook_section}
+{goal_section}
+{tone_section}
+{counterparty_section}
+
+TASKS:
+1. Provide an alternative clause that reflects the playbook guidance and negotiation goals.
+2. Keep language precise, enforceable, and commercially reasonable.
+3. Highlight any critical protections or concessions introduced.
+4. Return concise guidance (max 3 bullet points) explaining strategic rationale.
+
+OUTPUT FORMAT:
+Alternative Clause:
+<drafted clause>
+
+Guidance:
+- Bullet 1
+- Bullet 2
+- Bullet 3 (optional)
+"""
     return prompt
 
 @app.get("/")
@@ -272,6 +329,97 @@ async def get_contract_info(contract_id: str):
         "chunks": len(contract_data["chunks"]),
         "upload_time": contract_data["upload_time"]
     }
+
+
+@app.get("/api/contracts/{contract_id}/clauses")
+async def list_contract_clauses(contract_id: str):
+    """Return all clause chunks for a contract."""
+
+    if contract_id not in contract_storage:
+        raise HTTPException(status_code=404, detail="Contract not found")
+
+    contract_data = contract_storage[contract_id]
+    clauses_payload = []
+
+    for idx, clause in enumerate(contract_data["chunks"]):
+        preview = clause.strip()
+        preview = preview if len(preview) <= 240 else preview[:240].rstrip() + "…"
+        clauses_payload.append(
+            {
+                "index": idx,
+                "preview": preview,
+                "text": clause,
+            }
+        )
+
+    return {
+        "contract_id": contract_id,
+        "clauses": clauses_payload,
+        "total_clauses": len(contract_data["chunks"]),
+    }
+
+
+@app.post("/api/contracts/{contract_id}/clauses/{clause_index}/suggest", response_model=ClauseSuggestionResponse)
+async def suggest_clause_alternative(
+    contract_id: str,
+    clause_index: int = Path(..., ge=0),
+    request: ClauseSuggestionRequest = None,
+):
+    """Generate an AI-assisted alternative clause draft."""
+
+    if not model:
+        raise HTTPException(
+            status_code=500,
+            detail="Gemini API key not configured. Please add your API key to the .env file and restart the server."
+        )
+
+    if contract_id not in contract_storage:
+        raise HTTPException(status_code=404, detail="Contract not found")
+
+    contract_data = contract_storage[contract_id]
+    clauses = contract_data["chunks"]
+
+    if clause_index < 0 or clause_index >= len(clauses):
+        raise HTTPException(status_code=400, detail="Invalid clause index")
+
+    clause_text = clauses[clause_index]
+
+    try:
+        prompt = generate_clause_suggestion_prompt(
+            clause_text=clause_text,
+            playbook=request.playbook if request else None,
+            negotiation_goal=request.negotiation_goal if request else None,
+            tone=request.tone if request else None,
+            counterparty_position=request.counterparty_position if request else None,
+        )
+
+        response = model.generate_content(prompt)
+
+        if not response.text:
+            raise HTTPException(status_code=500, detail="Failed to generate clause suggestion")
+
+        suggestion_text = response.text.strip()
+        if "Guidance:" in suggestion_text:
+            alternative_clause, guidance = suggestion_text.split("Guidance:", 1)
+            alternative_clause = alternative_clause.replace("Alternative Clause:", "").strip()
+            guidance_summary = guidance.strip()
+        else:
+            alternative_clause = suggestion_text
+            guidance_summary = "Guidance not provided by model. Review the rewritten clause carefully."
+
+        return ClauseSuggestionResponse(
+            contract_id=contract_id,
+            clause_index=clause_index,
+            original_clause=clause_text.strip(),
+            ai_suggestion=alternative_clause,
+            guidance_summary=guidance_summary,
+            timestamp=datetime.now().isoformat(),
+        )
+
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Failed to generate clause alternative: {str(exc)}")
 
 if __name__ == "__main__":
     import uvicorn

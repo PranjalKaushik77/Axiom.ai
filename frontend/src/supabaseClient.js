@@ -29,4 +29,49 @@ export async function insertQuestionAnswer({ clientUserId, contractId, question,
     .single();
 }
 
+export async function insertClauseVersion({
+  clientUserId,
+  contractId,
+  clauseIndex,
+  originalText,
+  aiSuggestion,
+  finalText,
+  status,
+  notes,
+  counterpartyFeedback,
+}) {
+  return supabase
+    .from('clause_versions')
+    .insert([{
+      client_user_id: clientUserId,
+      contract_id: contractId,
+      clause_index: clauseIndex,
+      original_text: originalText,
+      ai_suggestion: aiSuggestion,
+      final_text: finalText,
+      status,
+      notes,
+      counterparty_feedback: counterpartyFeedback,
+    }])
+    .select()
+    .single();
+}
+
+export async function fetchClauseVersions({ clientUserId, contractId, clauseIndex }) {
+  let query = supabase
+    .from('clause_versions')
+    .select('*')
+    .eq('client_user_id', clientUserId)
+    .eq('contract_id', contractId)
+    .order('created_at', { ascending: false });
+
+  if (clauseIndex !== undefined && clauseIndex !== null) {
+    query = query.eq('clause_index', clauseIndex);
+  }
+
+  const { data, error } = await query;
+  if (error) throw error;
+  return data || [];
+}
+
 

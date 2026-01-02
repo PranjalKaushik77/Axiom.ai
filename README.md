@@ -16,6 +16,8 @@
 - ✅ **Pricing Page** - Complete pricing tiers for different user needs
 - ✅ **Comprehensive Error Handling** - Robust validation and user feedback
 - ✅ **Mobile Responsive** - Works perfectly on desktop and mobile devices
+- ✅ **Negotiation Sandbox & Versioning** - AI clause redlines, counterparty tracking, and Supabase-backed audit trails
+- ✅ **One-Click Exports** - Download AI answers or the latest negotiated draft instantly
 
 ---
 
@@ -130,6 +132,13 @@ yarn start
 - Navigate to the "Pricing" page to see subscription tiers
 - Three options: Starter (₹999), Professional (₹2,999), Enterprise (Custom)
 
+### **4. Negotiate & Export**
+
+1. Open the **Negotiation Sandbox** tab once a contract has been processed
+2. Select any clause to see the original language and request AI-drafted alternatives aligned with your playbooks
+3. Capture internal notes, record counterparty responses, and accept or revert clauses with a single click
+4. Download the current AI answer (`.md`) or the working contract draft (`.txt`) for sharing with stakeholders
+
 ---
 
 ## 🔧 **Service Management**
@@ -230,16 +239,53 @@ REACT_APP_BACKEND_URL=http://localhost:8001
 
 ---
 
+## 🗃️ **Supabase Tables**
+
+The Negotiation Sandbox stores its audit trail in Supabase. Make sure these tables exist:
+
+| Table             | Purpose                                                                        | Key Columns                                                                                                                                 |
+| ----------------- | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `onboarding`      | Stores onboarding answers                                                      | `client_user_id`, `name`, `age`, `profession`                                                                                               |
+| `documents`       | Metadata about uploaded contracts                                              | `client_user_id`, `title`, `pages`, `chunks`, `contract_id`                                                                                 |
+| `qa`              | Q&A history per client                                                         | `client_user_id`, `contract_id`, `question`, `answer`                                                                                       |
+| `clause_versions` | **New.** Tracks AI suggestions, acceptances, and counterparty notes per clause | `client_user_id`, `contract_id`, `clause_index`, `status`, `original_text`, `ai_suggestion`, `final_text`, `notes`, `counterparty_feedback` |
+
+Example SQL for the new `clause_versions` table:
+
+```sql
+create table if not exists clause_versions (
+  id uuid primary key default gen_random_uuid(),
+  client_user_id uuid not null,
+  contract_id uuid not null,
+  clause_index integer not null,
+  status text not null,
+  original_text text,
+  ai_suggestion text,
+  final_text text,
+  notes text,
+  counterparty_feedback text,
+  created_at timestamp with time zone default now()
+);
+
+create index if not exists clause_versions_contract_idx on clause_versions (contract_id, clause_index);
+```
+
+Grant insert/select rights to the `anon` role or expose via Supabase policies as needed for your deployment.
+
+---
+
 ## 📚 **API Endpoints**
 
 ### **Backend API (http://localhost:8001)**
 
-| Method | Endpoint              | Description                 |
-| ------ | --------------------- | --------------------------- |
-| GET    | `/`                   | Health check                |
-| POST   | `/api/upload`         | Upload PDF contract         |
-| POST   | `/api/ask`            | Ask question about contract |
-| GET    | `/api/contracts/{id}` | Get contract information    |
+| Method | Endpoint                                      | Description                                       |
+| ------ | --------------------------------------------- | ------------------------------------------------- |
+| GET    | `/`                                           | Health check                                      |
+| POST   | `/api/upload`                                 | Upload PDF contract                               |
+| POST   | `/api/ask`                                    | Ask question about contract                       |
+| GET    | `/api/contracts/{id}`                         | Get contract information                          |
+| GET    | `/api/contracts/{id}/clauses`                 | Retrieve structured clause chunks for negotiation |
+| POST   | `/api/contracts/{id}/clauses/{index}/suggest` | Generate AI-powered clause alternative            |
 
 ### **Example API Usage**
 
@@ -383,6 +429,7 @@ mongodb    RUNNING   pid 12347, uptime 0:05:00
 ✅ **Backend API**: http://localhost:8001 returns `{"status":"active","service":"Corpus AI Legal Assistant API"}`
 
 ✅ **Full Workflow**: Upload PDF → Ask Question → Receive AI Answer
+✅ **Negotiation Sandbox**: `/negotiation` shows clause list, AI alternatives, and timeline
 
 ---
 
