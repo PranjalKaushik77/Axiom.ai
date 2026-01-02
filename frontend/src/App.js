@@ -23,7 +23,7 @@ function Navigation() {
               <div className="w-12 h-12 bg-gradient-to-r from-blue-500 via-purple-600 to-cyan-500 rounded-2xl flex items-center justify-center animate-pulse-glow group-hover:scale-110 transition-transform duration-300">
                 <Zap className="w-7 h-7 text-white" />
               </div>
-              <span className="text-3xl font-black text-gradient-accent tracking-tight">Corpus AI</span>
+              <span className="text-3xl font-black text-gradient-accent tracking-tight">Axiom AI</span>
             </Link>
           </div>
 
